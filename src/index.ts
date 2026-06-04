@@ -21,11 +21,47 @@ class DescontoClientePremium implements ICalculadoraDesconto {
     calcular(valor: number): number { return valor * 0.15; }
 }
 
-// 2. Interface de tarefas do pedido
-interface ITarefasPedido {
+// --- 4. INTERFACE SEGREGATION PRINCIPLE (ISP) ---
+// Segregamos a interface genérica ITarefasPedido em interfaces menores e específicas [1].
+interface IProcessadorPagamento {
     processarPagamento(): void;
+}
+
+interface IGeradorNotaFiscal {
     gerarNotaFiscal(): void;
+}
+
+interface IEntregaFisica {
+    calcularFrete(): number;
     imprimirEtiquetaFisica(): void;
+}
+
+// --- 3. LISKOV SUBSTITUTION PRINCIPLE (LSP) ---
+// Criamos uma classe base para Pedido. Note que PedidoProdutoDigital não herdará 
+// comportamentos de entrega física, evitando erros de exceção [1].
+abstract class Pedido {
+    constructor(
+        public valorTotal: number,
+        protected calculadoraDesconto: ICalculadoraDesconto
+    ) {}
+
+    aplicarDesconto(): number {
+        return this.valorTotal - this.calculadoraDesconto.calcular(this.valorTotal);
+    }
+}
+
+// Pedido Físico implementa todas as interfaces, incluindo entrega [1, 3].
+class PedidoFisico extends Pedido implements IProcessadorPagamento, IGeradorNotaFiscal, IEntregaFisica {
+    processarPagamento(): void { console.log("Processando pagamento físico..."); }
+    gerarNotaFiscal(): void { console.log("Gerando NF para produto físico..."); }
+    calcularFrete(): number { return 20.00; }
+    imprimirEtiquetaFisica(): void { console.log("Imprimindo etiqueta para envio..."); }
+}
+
+// Pedido Digital NÃO implementa IEntregaFisica, respeitando o LSP e o ISP [1].
+class PedidoProdutoDigital extends Pedido implements IProcessadorPagamento, IGeradorNotaFiscal {
+    processarPagamento(): void { console.log("Processando pagamento digital..."); }
+    gerarNotaFiscal(): void { console.log("Gerando NF-e para produto digital..."); }
 }
 
 // --- 1. SINGLE RESPONSIBILITY PRINCIPLE (SRP) ---
