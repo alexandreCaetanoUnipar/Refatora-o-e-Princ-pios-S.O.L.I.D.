@@ -13,38 +13,35 @@ interface ITarefasPedido {
     imprimirEtiquetaFisica(): void;
 }
 
-// 3. Classe principal de Pedido
-class Pedido {
-    public valorTotal: number;
-    public tipoCliente: string;
-
-    constructor(valorTotal: number, tipoCliente: string) {
-        this.valorTotal = valorTotal;
-        this.tipoCliente = tipoCliente;
-    }
-
-    calcularDesconto(): number {
-        if (this.tipoCliente === "VIP") {
-            return this.valorTotal * 0.20;
-        } else if (this.tipoCliente === "ESTUDANTE") {
-            return this.valorTotal * 0.10;
-        }
-        return 0;
-    }
-
-    calcularFrete(): number {
-        return 15.0;
-    }
-
-    salvarPedido(): void {
-        const db = new BancoDeDadosMySQL();
-        db.salvar(this);
-    }
-
-    enviarEmailConfirmacao(): void {
-        console.log("Enviando e-mail de confirmação para o cliente...");
+// --- 1. SINGLE RESPONSIBILITY PRINCIPLE (SRP) ---
+// O Serviço de Email e o Gerenciador de Pedidos isolam responsabilidades que antes estavam na classe Pedido [1].
+class ServicoEmail {
+    enviarConfirmacao(): void {
+        console.log("Enviando e-mail de confirmação...");
     }
 }
+
+class GerenciadorDePedidos {
+    constructor(
+        private persistencia: IPersistencia,
+        private email: ServicoEmail
+    ) {}
+
+    // O sistema agora depende de abstrações (IPersistencia) e não de classes concretas (DIP) [1].
+    finalizarPedido(pedido: Pedido): void {
+        this.persistencia.salvar(pedido);
+        this.email.enviarConfirmacao();
+        console.log("Pedido finalizado com sucesso!");
+    }
+}
+
+// --- Exemplo de Uso ---
+const meuBD = new BancoDeDadosMySQL();
+const servicoEmail = new ServicoEmail();
+const gerenciador = new GerenciadorDePedidos(meuBD, servicoEmail);
+
+const novoPedidoDigital = new PedidoProdutoDigital(100, new DescontoClientePremium());
+gerenciador.finalizarPedido(novoPedidoDigital);
 
 // 4. Implementação para produtos digitais
 class PedidoProdutoDigital extends Pedido implements ITarefasPedido {
