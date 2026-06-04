@@ -1,6 +1,10 @@
+// --- 5. DEPENDENCY INVERSION PRINCIPLE (DIP) ---
+// Criamos uma interface para a persistência, removendo o acoplamento com o MySQL [1].
+interface IPersistencia {
+    salvar(dados: any): void;
+}
 
-// 1. Classe de Banco de Dados Concreta
-class BancoDeDadosMySQL {
+class BancoDeDadosMySQL implements IPersistencia {
     salvar(dados: any): void {
         console.log("Salvando dados no MySQL...");
     }
