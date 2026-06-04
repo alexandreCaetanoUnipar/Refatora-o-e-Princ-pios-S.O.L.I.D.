@@ -6,6 +6,21 @@ class BancoDeDadosMySQL {
     }
 }
 
+// --- 2. OPEN/CLOSED PRINCIPLE (OCP) ---
+// uma interface para estratégias de desconto, permitindo novos tipos (como PREMIUM) 
+// sem alterar o código existente [1].
+interface ICalculadoraDesconto {
+    calcular(valor: number): number;
+}
+
+class DescontoClienteComum implements ICalculadoraDesconto {
+    calcular(valor: number): number { return valor * 0.05; }
+}
+
+class DescontoClientePremium implements ICalculadoraDesconto {
+    calcular(valor: number): number { return valor * 0.15; }
+}
+
 // 2. Interface de tarefas do pedido
 interface ITarefasPedido {
     processarPagamento(): void;
